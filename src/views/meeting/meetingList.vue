@@ -1,45 +1,36 @@
 <template>
-  <div>
-    <b-tabs content-class="mt-3">
-      <b-tab title="모임 조회" active>
-        <template>
-          <div v-if="cardList">
-            <b-table small :fields="fields" :items="allMeetingList" responsive="sm" selectable @row-clicked="rowClick">
-              <!-- A virtual column -->
-              <template #cell(id)="allMeetingList">
-                {{ allMeetingList.item.id }}
-              </template>
+  <div v-if="cardList">
+    <b-table small :fields="fields" :items="allMeetingList" responsive="sm" selectable @row-clicked="rowClick">
+      <!-- A virtual column -->
+      <template #cell(id)="allMeetingList">
+        {{ allMeetingList.item.id }}
+      </template>
 
-              <!-- A custom formatted column -->
-              <template #cell(title)="allMeetingList">
-                <b class="text-info">{{ allMeetingList.item.title }}</b>
-              </template>
+      <!-- A custom formatted column -->
+      <template #cell(title)="allMeetingList">
+        <b class="text-info">{{ allMeetingList.item.title }}</b>
+      </template>
 
-              <!-- A virtual composite column -->
-              <template #cell(startAt)="allMeetingList"> {{ allMeetingList.item.startAt }}</template>
+      <!-- A virtual composite column -->
+      <template #cell(startAt)="allMeetingList"> {{ allMeetingList.item.startAt }}</template>
 
-              <!-- Optional default data cell scoped slot -->
-              <template #cell(Host)="allMeetingList">
-                <i>{{ allMeetingList.host.nickname }}</i>
-              </template>
+      <!-- Optional default data cell scoped slot -->
+      <template #cell(Host)="allMeetingList">
+        <i>{{ allMeetingList.host.nickname }}</i>
+      </template>
 
-              <template #cell(maxParticipant)="allMeetingList">
-                <i>{{ allMeetingList.item.cntCurrentParticipant }} / {{ allMeetingList.item.maxParticipant }}</i>
-              </template>
-            </b-table>
-          </div>
-        </template>
-        <b-button
-          v-if="pageInfo.hasNextPage"
-          variant="light"
-          @click="listMeetings({ first: 10, after: pageInfo.endCursor })"
-          block
-          class="float-right mt-2"
-          >다음</b-button
-        >
-      </b-tab>
-      <b-tab title="모임 생성"><p>I'm a disabled tab!</p></b-tab>
-    </b-tabs>
+      <template #cell(maxParticipant)="allMeetingList">
+        <i>{{ allMeetingList.item.cntCurrentParticipant }} / {{ allMeetingList.item.maxParticipant }}</i>
+      </template>
+    </b-table>
+    <b-button
+      v-if="pageInfo.hasNextPage"
+      variant="light"
+      @click="listMeetings({ first: 10, after: pageInfo.endCursor })"
+      block
+      class="float-right mt-2"
+      >다음</b-button
+    >
     <b-navbar-nav>
       <b-nav-form>
         <b-form-input size="sm" class="mr-sm-2" placeholder="호스트 ID" v-model="hostId"></b-form-input>
@@ -87,7 +78,7 @@ interface Meeting {
 }
 import Header from '../../layout/components/header.vue';
 export default Vue.extend({
-  name: 'meetings',
+  name: 'meetingsList',
   components: {
     // eslint-disable-next-line vue/no-unused-components
     Header,

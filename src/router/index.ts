@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import VueRouter from 'vue-router';
+import meetingMain from '../views/meeting/meetingMain.vue';
 import meetingList from '../views/meeting/meetingList.vue';
 import meetingDetail from '../views/meeting/meetingDetail.vue';
 import layoutMain from '../layout/layout.vue';
@@ -19,15 +20,15 @@ const router = new VueRouter({
     //모임
     {
       path: '/meetings/',
-      name: 'meetingMain',
+      name: 'Main',
       components: {
         layout: layoutMain,
-        main: meetingList,
+        main: meetingMain,
       },
     },
     {
       path: '/meetings/:id',
-      name: 'meetingMain',
+      name: 'meetingDetail',
       components: {
         layout: layoutMain,
         main: meetingDetail,

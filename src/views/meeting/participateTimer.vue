@@ -1,30 +1,32 @@
 <template>
-  <div class="countdown" loaded>
-    <div class="countdown__num">
-      <span
-        class="countdown__num--time"
-        style="color: var(--color-primary);
-      font-size: 40px;"
-        >{{ displayDays }}</span
-      >
-      <span class="countdown__num--unit">Days</span>
+  <b-badge v-if="!expired" variant="success">
+    <div class="countdown" loaded>
+      <div class="countdown__num">
+        <span class="countdown__num--time">{{ displayDays }}</span>
+        <span class="countdown__num--unit">Days</span>
+      </div>
+      <span class="countdown__num--colon">:</span>
+      <div class="countdown__num">
+        <span class="countdown__num--time">{{ displayHours }}</span>
+        <span class="countdown__num--unit" style="">Hours</span>
+      </div>
+      <span class="countdown__num--colon">:</span>
+      <div class="countdown__num">
+        <span class="countdown__num--time">{{ displayMinutes }}</span>
+        <span class="countdown__num--unit">Minutes</span>
+      </div>
+      <span class="countdown__num--colon">:</span>
+      <div class="countdown__num">
+        <span class="countdown__num--time">{{ displaySeconds }}</span>
+        <span class="countdown__num--unit">Seconds</span>
+      </div>
     </div>
-    <span class="countdown__num--colon">:</span>
+  </b-badge>
+  <b-badge v-else variant="danger">
     <div class="countdown__num">
-      <span class="countdown__num--time">{{ displayHours }}</span>
-      <span class="countdown__num--unit" style="">Hours</span>
-    </div>
-    <span class="countdown__num--colon">:</span>
-    <div class="countdown__num">
-      <span class="countdown__num--time">{{ displayMinutes }}</span>
-      <span class="countdown__num--unit">Minutes</span>
-    </div>
-    <span class="countdown__num--colon">:</span>
-    <div class="countdown__num">
-      <span class="countdown__num--time">{{ displaySeconds }}</span>
-      <span class="countdown__num--unit">Seconds</span>
-    </div>
-  </div>
+      <span class="my-2" style="font-size: 30px;">마감시간이 지났습니다</span>
+    </div></b-badge
+  >
 </template>
 
 <script lang="ts">

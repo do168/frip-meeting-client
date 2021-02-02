@@ -2,20 +2,28 @@
   <div align="left">
     <b-card no-body>
       <template #header>
-        <h3 class="mb-0">
-          <B>{{ meeting.title }}</B>
-        </h3>
-
-        <p sytle="font-size:small">
-          <I>{{ meeting.updatedAt }}에 게시됨</I>
-        </p>
+        <b-container fluid class="text-left">
+          <b-row>
+            <b-col cols="6">
+              <h3 class="mb-0">
+                <B>{{ meeting.title }}</B>
+              </h3>
+              <p text-align="left" sytle="font-size:small;">
+                <I style="color:grey">{{ meeting.updatedAt }}에 게시됨</I>
+              </p>
+            </b-col>
+            <b-col class="text-right">
+              <participate-timer :deadline="meeting.deadline" />
+            </b-col>
+          </b-row>
+        </b-container>
       </template>
 
       <b-card-body>
         <b-card-title>
           <B>{{ meeting.host.nickname }}의 모임</B></b-card-title
         >
-        <div style="margin:15px">
+        <div style="margin:15px; color:grey">
           <b-icon icon="calendar2-event" style="margin-right:15px"></b-icon>
           <I> {{ meeting.startAt }} 에 진행됨 </I>
         </div>
@@ -54,14 +62,11 @@
       <b-card-body> </b-card-body>
 
       <b-card-footer align="right">
-        <span class="float-right">
-          <participate-timer :deadline="meeting.deadline" />
-          <b-button v-if="isPossibleParticipant" variant="primary" v-b-modal.modal-1>참가 신청</b-button>
-          <b-button v-else disabled href="#" style="display:inline-block">참가 불가</b-button>
-          <b-modal id="modal-1"
-            ><meeting-participation v-bind:meetId="meetingId" v-bind:alreadyApply="meeting.participatesUsers"
-          /></b-modal>
-        </span>
+        <b-button v-if="isPossibleParticipant" variant="primary" v-b-modal.modal-1>참가 신청</b-button>
+        <b-button v-else disabled href="#" style="display:inline-block">참가 불가</b-button>
+        <b-modal id="modal-1"
+          ><meeting-participation v-bind:meetId="meetingId" v-bind:alreadyApply="meeting.participatesUsers"
+        /></b-modal>
       </b-card-footer>
     </b-card>
   </div>
@@ -126,7 +131,10 @@ export default Vue.extend({
 
   computed: {
     isPossibleParticipant(): boolean {
-      return this.meeting.cntCurrentParticipant < this.meeting.maxParticipant;
+      return (
+        this.meeting.cntCurrentParticipant < this.meeting.maxParticipant &&
+        new Date().getTime() < new Date(this.meeting.deadline).getTime()
+      );
     },
   },
 
