@@ -1,83 +1,77 @@
 <template>
-  <div>
-    <b-jumbotron>
-      <template #header>{{ meetingInfo.title }}</template>
+  <div align="left">
+    <b-card no-body>
+      <template #header>
+        <h3 class="mb-0">
+          <B>{{ meeting.title }}</B>
+        </h3>
 
-      <template #lead>
-        <div>
-          <ul class="list-unstyled">
-            <b-media tag="li">
-              <template #aside>
-                <b-img blank blank-color="#abc" width="64" alt="placeholder"></b-img>
-              </template>
-              <h5 class="mt-0 mb-1">Host</h5>
-              <p class="mb-0">
-                {{ meetingInfo.host.nickname }}
-              </p>
-            </b-media>
-
-            <b-media tag="li" class="my-4">
-              <template #aside>
-                <b-img blank blank-color="#cba" width="64" alt="placeholder"></b-img>
-              </template>
-
-              <h5 class="mt-0 mb-1">시작시간 / 종료시간</h5>
-              <p class="mb-0">{{ meetingInfo.startAt }} / {{ meetingInfo.endAt }}</p>
-            </b-media>
-
-            <b-media tag="li">
-              <template #aside>
-                <b-img blank blank-color="#bac" width="64" alt="placeholder"></b-img>
-              </template>
-
-              <h5 class="mt-0 mb-1">마감시간</h5>
-              <p class="mb-0">
-                {{ meetingInfo.deadline }}
-              </p>
-            </b-media>
-
-            <b-media tag="li" class="my-4">
-              <template #aside>
-                <b-img blank blank-color="#bae" width="64" alt="placeholder"></b-img>
-              </template>
-
-              <h5 class="mt-0 mb-1">장소</h5>
-              <p class="mb-0">
-                {{ meetingInfo.place }}
-              </p>
-            </b-media>
-
-            <b-media tag="li">
-              <template #aside>
-                <b-img blank blank-color="#edc" width="64" alt="placeholder"></b-img>
-              </template>
-
-              <h5 class="mt-0 mb-1">현재 참가 인원 / 최대 참가 인원</h5>
-              <p class="mb-0">{{ meetingInfo.cntCurrentParticipant }} / {{ meetingInfo.maxParticipant }}</p>
-            </b-media>
-          </ul>
-        </div>
+        <p sytle="font-size:small">
+          <I>{{ meeting.updatedAt }}에 게시됨</I>
+        </p>
       </template>
 
-      <hr class="my-4" />
+      <b-card-body>
+        <b-card-title>
+          <B>{{ meeting.host.nickname }}의 모임</B></b-card-title
+        >
+        <div style="margin:15px">
+          <b-icon icon="calendar2-event" style="margin-right:15px"></b-icon>
+          <I> {{ meeting.startAt }} 에 진행됨 </I>
+        </div>
+        <div>
+          <b-calendar
+            v-model="value"
+            :date-info-fn="dateClass"
+            locale="kr"
+            :hide-header="true"
+            :initial-date="meeting.startAt"
+          ></b-calendar>
+        </div>
+        <div style="margin-top:15px"></div>
+      </b-card-body>
 
-      <h1>
-        {{ meetingInfo.content }}
-      </h1>
+      <b-list-group flush>
+        <b-list-group-item
+          ><b-icon icon="person-check-fill" style="margin-right:15px"></b-icon> 최대 {{ meeting.maxParticipant }}명까지
+          참가 가능</b-list-group-item
+        >
+        <b-list-group-item
+          ><b-icon icon="question-diamond-fill" style="margin-right:15px"></b-icon>
+          {{ meeting.place }}</b-list-group-item
+        >
+        <b-list-group-item>
+          <b-card-title><b-icon icon="info-circle" style="margin-right:15px"></b-icon> <B>모임 내용</B></b-card-title>
+          <div style="margin-left:50px">{{ meeting.content }}</div></b-list-group-item
+        >
 
-      <b-button v-if="isPossibleParticipant" variant="primary" v-b-modal.modal-1>참가 신청</b-button>
-      <b-button v-else disabled href="#">참가 불가</b-button>
-      <b-modal id="modal-1"
-        ><meeting-participation v-bind:meetId="meetingId" v-bind:alreadyApply="meetingInfo.participatesUsers"
-      /></b-modal>
-    </b-jumbotron>
+        <b-list-group-item>
+          <div><b-icon icon="alarm" style="margin-right:15px"></b-icon> 시작시간 : {{ meeting.startAt }}</div>
+          <div><b-icon icon="alarm-fill" style="margin-right:15px"></b-icon> 종료시간 : {{ meeting.endAt }}</div>
+        </b-list-group-item>
+      </b-list-group>
+
+      <b-card-body> </b-card-body>
+
+      <b-card-footer align="right">
+        <span class="float-right">
+          <participate-timer :deadline="meeting.deadline" />
+          <b-button v-if="isPossibleParticipant" variant="primary" v-b-modal.modal-1>참가 신청</b-button>
+          <b-button v-else disabled href="#" style="display:inline-block">참가 불가</b-button>
+          <b-modal id="modal-1"
+            ><meeting-participation v-bind:meetId="meetingId" v-bind:alreadyApply="meeting.participatesUsers"
+          /></b-modal>
+        </span>
+      </b-card-footer>
+    </b-card>
   </div>
 </template>
 
 <script lang="ts">
 import gql from 'graphql-tag';
-import Vue from 'vue';
 import MeetingParticipation from './meetingParticipation.vue';
+import ParticipateTimer from './participateTimer.vue';
+import Vue from 'vue';
 
 interface GqlResult<T> {
   data: T;
@@ -86,6 +80,11 @@ interface GqlResult<T> {
 interface User {
   meetingId: number;
   id: string;
+}
+
+interface Host {
+  id: string;
+  nickname: string;
 }
 
 interface Meeting {
@@ -97,50 +96,56 @@ interface Meeting {
   deadline: string;
   place: string;
   maxParticipant: number;
-  host: string;
+  updatedAt: string;
+  host: Host | undefined;
   cntCurrentParticipant: number | 0;
   participatesUsers: User[];
 }
 
-export default {
+export default Vue.extend({
   name: 'meetingDetails',
   components: {
     MeetingParticipation,
+    ParticipateTimer,
   },
   data() {
-    const meetingId = Number(this.$route.params.id);
-    const participatesUsers: User[] = [];
-    const meetingInfo: Meeting = {
-      id: 0,
-      title: '',
-      content: '',
-      startAt: '',
-      endAt: '',
-      deadline: '',
-      place: '',
-      maxParticipant: 0,
-      host: '',
-      cntCurrentParticipant: 0,
-      participatesUsers: participatesUsers,
-    };
     return {
-      meetingId: meetingId,
+      meetingId: 0,
       userId: '',
-      meetingInfo: meetingInfo,
+      participatesUsers: [],
+      meeting: {} as Meeting,
+      dateString: '',
+      value: '',
     };
   },
+
   created() {
-    this.listMeetings();
+    this.meetingId = Number(this.$route.params.id);
+    this.getMeeting();
   },
 
   computed: {
     isPossibleParticipant(): boolean {
-      return this.meetingInfo.cntCurrentParticipant < this.meetingInfo.maxParticipant;
+      return this.meeting.cntCurrentParticipant < this.meeting.maxParticipant;
     },
   },
 
   methods: {
-    listMeetings(): void {
+    // 달력에 모임 시작, 끝을 나타내는 함수
+    dateClass(ymd: string, date: Date) {
+      const month = date.getMonth();
+      const startDate = new Date(this.meeting.startAt);
+      const endDate = new Date(this.meeting.endAt);
+      const day = date.getDate();
+      return month >= startDate.getMonth() &&
+        month <= endDate.getMonth() &&
+        day >= startDate.getDate() &&
+        day <= endDate.getDate()
+        ? 'table-info'
+        : '';
+    },
+    // 미팅 정보 쿼리
+    getMeeting(): void {
       this.$apollo
         .query({
           query: gql`
@@ -152,6 +157,7 @@ export default {
                 startAt
                 endAt
                 deadline
+                updatedAt
                 place
                 maxParticipant
                 cntCurrentParticipant
@@ -167,36 +173,19 @@ export default {
           variables: { id: this.meetingId },
         })
         .then((result: any): void => {
-          this.meetingInfo = result.data.meeting;
-        })
-        .catch((err: any) => {
-          console.log(err);
-        });
-    },
-    participateMeeting(): void {
-      this.$apollo
-        .mutate({
-          mutation: gql`
-            mutation($meetingId: Int!, $userId: String!) {
-              createMeetingParticipation(meetingId: $meetingId, userId: $userId) {
-                meeting {
-                  id
-                }
-                user {
-                  id
-                }
-              }
-            }
-          `,
-          variables: { meetingId: this.meetingId, userId: this.userId },
-        })
-        .then((result: any): void => {
-          this.meetingInfo = result.data.meeting;
+          this.meeting = result.data.meeting;
+          // date 재조립. 이거 datetime이라 표준시 포함해서 localdatetime으로 바꿔야 한다
+          this.meeting.startAt = this.meeting.startAt.substring(0, 10) + ' ' + this.meeting.startAt.substring(11, 19);
+          this.meeting.endAt = this.meeting.endAt.substring(0, 10) + ' ' + this.meeting.endAt.substring(11, 19);
+          this.meeting.deadline =
+            this.meeting.deadline.substring(0, 10) + ' ' + this.meeting.deadline.substring(11, 19);
+          this.meeting.updatedAt =
+            this.meeting.updatedAt.substring(0, 10) + ' ' + this.meeting.updatedAt.substring(11, 19);
         })
         .catch((err: any) => {
           console.log(err);
         });
     },
   },
-};
+});
 </script>

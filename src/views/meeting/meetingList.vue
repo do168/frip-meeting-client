@@ -43,7 +43,7 @@
     <b-navbar-nav>
       <b-nav-form>
         <b-form-input size="sm" class="mr-sm-2" placeholder="호스트 ID" v-model="hostId"></b-form-input>
-        <b-button size="sm" class="my-2 my-sm-0" @click="listMeetings({first: 10})">Search</b-button>
+        <b-button size="sm" class="my-2 my-sm-0" @click="listMeetings({ first: 10 })">Search</b-button>
       </b-nav-form>
     </b-navbar-nav>
   </div>
@@ -51,6 +51,7 @@
 
 <script lang="ts">
 import gql from 'graphql-tag';
+import Vue from 'vue';
 
 interface GqlResult<T> {
   data: T;
@@ -85,7 +86,7 @@ interface Meeting {
   cntCurrentParticipant: number | 0;
 }
 import Header from '../../layout/components/header.vue';
-export default {
+export default Vue.extend({
   name: 'meetings',
   components: {
     // eslint-disable-next-line vue/no-unused-components
@@ -140,7 +141,6 @@ export default {
       });
     },
     listMeetings(page: Page): void {
-      console.log(this.hostId);
       this.cardList = [];
       this.page.first = Number(page.first);
       this.page.after = page.after || '';
@@ -172,7 +172,6 @@ export default {
           variables: { hostId: this.hostId, page: this.page },
         })
         .then((result: GqlResult<MeetingConnection>): void => {
-          console.log(...result.data.meetings.edges);
           this.cardList.push(...result.data.meetings.edges);
           this.pageInfo = result.data.meetings.pageInfo;
         })
@@ -181,5 +180,5 @@ export default {
         });
     },
   },
-};
+});
 </script>
