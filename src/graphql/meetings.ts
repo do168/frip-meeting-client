@@ -9,6 +9,10 @@ export const GET_MEETINGS = gql`
           title
           startAt
           maxParticipant
+          cntCurrentParticipant
+          host {
+            nickname
+          }
         }
       }
       pageInfo {

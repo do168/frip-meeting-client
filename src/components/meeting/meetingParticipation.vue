@@ -15,6 +15,11 @@
           <b-icon icon="exclamation-circle"></b-icon>
           {{ errorMessage }}
         </b-alert>
+        <!-- <error-alert
+          :showSuccessMessage="showSuccessMessage"
+          :showErrorMessage="showErrorMessage"
+          :errorMessage="errorMessage"
+        /> -->
         <b-button type="submit" class="float-right" variant="primary">참가 신청</b-button>
         <b-button type="reset" class="float-right mx-2" variant="danger">입력 초기화</b-button>
       </b-form>
@@ -24,7 +29,8 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import gql from 'graphql-tag';
+import { CREATE_MEETING_PARTICIPATION } from '@/graphql/createMeetingParticipation';
+import ErrorAlert from '@/components/errorAlert.vue';
 export default Vue.extend({
   data() {
     return {
@@ -33,15 +39,18 @@ export default Vue.extend({
       showSuccessMessage: false,
       showErrorMessage: false,
       errorMessage: '',
+      submit: false,
     };
   },
   props: ['meetId', 'alreadyApply'],
+  components: {
+    // ErrorAlert,
+  },
   methods: {
     isAlreadyApplied(): boolean {
       return this.alreadyApply.find((c: any) => c.id === this.userId);
     },
     onSubmit(event: Event): void {
-      console.log(this.meetId);
       event.preventDefault();
       if (this.isAlreadyApplied()) {
         this.showErrorMessage = true;
@@ -49,26 +58,13 @@ export default Vue.extend({
       } else {
         this.$apollo
           .mutate({
-            mutation: gql`
-              mutation($meetingId: Int!, $userId: String!) {
-                createMeetingParticipation(meetingId: $meetingId, userId: $userId) {
-                  meeting {
-                    id
-                  }
-                  user {
-                    id
-                  }
-                }
-              }
-            `,
+            mutation: CREATE_MEETING_PARTICIPATION,
             variables: { meetingId: this.meetId, userId: this.userId },
           })
-          .then(result => {
-            console.log(result);
+          .then(() => {
             this.showSuccessMessage = true;
           })
           .catch(error => {
-            console.log(error);
             this.showErrorMessage = true;
             this.errorMessage = error.message.split(':')[1];
           });

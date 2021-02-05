@@ -1,51 +1,51 @@
 <template>
-  <b-badge v-if="!expired" variant="success">
-    <div class="countdown" loaded>
-      <div class="countdown__num">
-        <span class="countdown__num--time">{{ displayDays }}</span>
-        <span class="countdown__num--unit">Days</span>
+  <div v-if="loaded">
+    <b-badge v-if="!expired" variant="success">
+      <div class="countdown" loaded>
+        <div class="countdown__num">
+          <span class="countdown__num--time">{{ displayDays }}</span>
+          <span class="countdown__num--unit">Days</span>
+        </div>
+        <span class="countdown__num--colon">:</span>
+        <div class="countdown__num">
+          <span class="countdown__num--time">{{ displayHours }}</span>
+          <span class="countdown__num--unit">Hours</span>
+        </div>
+        <span class="countdown__num--colon">:</span>
+        <div class="countdown__num">
+          <span class="countdown__num--time">{{ displayMinutes }}</span>
+          <span class="countdown__num--unit">Minutes</span>
+        </div>
+        <span class="countdown__num--colon">:</span>
+        <div class="countdown__num">
+          <span class="countdown__num--time">{{ displaySeconds }}</span>
+          <span class="countdown__num--unit">Seconds</span>
+        </div>
       </div>
-      <span class="countdown__num--colon">:</span>
+    </b-badge>
+    <b-badge v-else variant="danger">
       <div class="countdown__num">
-        <span class="countdown__num--time">{{ displayHours }}</span>
-        <span class="countdown__num--unit" style="">Hours</span>
-      </div>
-      <span class="countdown__num--colon">:</span>
-      <div class="countdown__num">
-        <span class="countdown__num--time">{{ displayMinutes }}</span>
-        <span class="countdown__num--unit">Minutes</span>
-      </div>
-      <span class="countdown__num--colon">:</span>
-      <div class="countdown__num">
-        <span class="countdown__num--time">{{ displaySeconds }}</span>
-        <span class="countdown__num--unit">Seconds</span>
-      </div>
-    </div>
-  </b-badge>
-  <b-badge v-else variant="danger">
-    <div class="countdown__num">
-      <span class="my-2" style="font-size: 30px;">마감시간이 지났습니다</span>
-    </div></b-badge
-  >
+        <span class="my-2" style="font-size: 30px;">마감시간이 지났습니다</span>
+      </div></b-badge
+    >
+  </div>
+  <div v-else><b-spinner variant="success" label="Spinning"></b-spinner></div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 export default Vue.extend({
   name: 'participateTimer',
-  props: {
-    deadline: { type: String, required: true },
-  },
+  props: ['deadline'],
   data() {
     const limit = new Date(this.deadline);
     const year = limit.getFullYear();
-    const month = limit.getMonth() + 1;
+    const month = limit.getMonth();
     const day = limit.getDate();
     const hour = limit.getHours();
     const minute = limit.getMinutes();
     const second = limit.getSeconds();
     const milliseconds = limit.getMilliseconds();
-    console.log(year, month, hour, minute);
     return {
       displayDays: 0,
       displayHours: 0,

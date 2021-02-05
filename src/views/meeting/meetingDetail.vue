@@ -13,7 +13,9 @@
               </p>
             </b-col>
             <b-col class="text-right">
-              <participate-timer :deadline="meeting.deadline" />
+              <div v-cloak v-if="meeting.deadline">
+                <participate-timer v-bind:deadline="meeting.deadline" />
+              </div>
             </b-col>
           </b-row>
         </b-container>
@@ -21,7 +23,7 @@
 
       <b-card-body>
         <b-card-title>
-          <B>{{ meeting.host.nickname }}의 모임</B></b-card-title
+          <B>{{ nickname }}의 모임</B></b-card-title
         >
         <div style="margin:15px; color:grey">
           <b-icon icon="calendar2-event" style="margin-right:15px"></b-icon>
@@ -30,10 +32,13 @@
         <div>
           <b-calendar
             v-model="value"
-            :date-info-fn="dateClass"
             locale="kr"
             :hide-header="true"
+            selected-variant="info"
+            today-variant="info"
+            nav-button-variant="info"
             :initial-date="meeting.startAt"
+            :date-info-fn="dateClass"
           ></b-calendar>
         </div>
         <div style="margin-top:15px"></div>
@@ -61,57 +66,40 @@
 
       <b-card-body> </b-card-body>
 
-      <b-card-footer align="right">
-        <b-button v-if="isPossibleParticipant" variant="primary" v-b-modal.modal-1>참가 신청</b-button>
-        <b-button v-else disabled href="#" style="display:inline-block">참가 불가</b-button>
+      <b-card-footer>
+        <b-button class="float-right mr-1" v-if="isPossibleParticipant" variant="primary" v-b-modal.modal-1
+          >참가 신청</b-button
+        >
+        <b-button class="float-right mr-1" v-else disabled href="#" style="display:inline-block">참가 불가</b-button>
         <b-modal id="modal-1"
           ><meeting-participation v-bind:meetId="meetingId" v-bind:alreadyApply="meeting.participatesUsers"
         /></b-modal>
+        <b-button class="float-left mr-1" variant="warning" v-b-modal.modal-2>모임 수정</b-button>
+        <b-modal id="modal-2"><update :meeting="meeting"/></b-modal>
+        <b-button class="float-left mr-1" variant="danger" v-b-modal.modal-3>모임 삭제</b-button>
+        <b-modal id="modal-3"><delete :id="meetingId"/></b-modal>
       </b-card-footer>
     </b-card>
   </div>
 </template>
 
 <script lang="ts">
-import gql from 'graphql-tag';
-import MeetingParticipation from './meetingParticipation.vue';
-import ParticipateTimer from './participateTimer.vue';
+import MeetingParticipation from '@/components/meeting/meetingParticipation.vue';
+import ParticipateTimer from '@/components/meeting/participateTimer.vue';
+import Update from '@/components/meeting/Update.vue';
+import Delete from '@/components/meeting/Delete.vue';
 import Vue from 'vue';
-
-interface GqlResult<T> {
-  data: T;
-}
-
-interface User {
-  meetingId: number;
-  id: string;
-}
-
-interface Host {
-  id: string;
-  nickname: string;
-}
-
-interface Meeting {
-  id: number;
-  title: string;
-  content: string;
-  startAt: string;
-  endAt: string;
-  deadline: string;
-  place: string;
-  maxParticipant: number;
-  updatedAt: string;
-  host: Host | undefined;
-  cntCurrentParticipant: number | 0;
-  participatesUsers: User[];
-}
+import { GET_MEETING } from '@/graphql/meeting';
+import { convertTimezone } from '@/services/serviceUtil';
+import { Meeting } from '@/model/Meeting';
 
 export default Vue.extend({
   name: 'meetingDetails',
   components: {
     MeetingParticipation,
     ParticipateTimer,
+    Update,
+    Delete,
   },
   data() {
     return {
@@ -121,6 +109,7 @@ export default Vue.extend({
       meeting: {} as Meeting,
       dateString: '',
       value: '',
+      nickname: '',
     };
   },
 
@@ -156,39 +145,16 @@ export default Vue.extend({
     getMeeting(): void {
       this.$apollo
         .query({
-          query: gql`
-            query GetMeeting($id: ID!) {
-              meeting(id: $id) {
-                id
-                title
-                content
-                startAt
-                endAt
-                deadline
-                updatedAt
-                place
-                maxParticipant
-                cntCurrentParticipant
-                host {
-                  nickname
-                }
-                participatesUsers {
-                  id
-                }
-              }
-            }
-          `,
+          query: GET_MEETING,
           variables: { id: this.meetingId },
         })
         .then((result: any): void => {
           this.meeting = result.data.meeting;
-          // date 재조립. 이거 datetime이라 표준시 포함해서 localdatetime으로 바꿔야 한다
-          this.meeting.startAt = this.meeting.startAt.substring(0, 10) + ' ' + this.meeting.startAt.substring(11, 19);
-          this.meeting.endAt = this.meeting.endAt.substring(0, 10) + ' ' + this.meeting.endAt.substring(11, 19);
-          this.meeting.deadline =
-            this.meeting.deadline.substring(0, 10) + ' ' + this.meeting.deadline.substring(11, 19);
-          this.meeting.updatedAt =
-            this.meeting.updatedAt.substring(0, 10) + ' ' + this.meeting.updatedAt.substring(11, 19);
+          this.nickname = result.data.meeting.host.nickname;
+          this.meeting.startAt = convertTimezone(this.meeting.startAt);
+          this.meeting.endAt = convertTimezone(this.meeting.endAt);
+          this.meeting.deadline = convertTimezone(this.meeting.deadline);
+          this.meeting.updatedAt = convertTimezone(this.meeting.updatedAt);
         })
         .catch((err: any) => {
           console.log(err);
@@ -197,3 +163,9 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style>
+[v-cloak] {
+  display: none !important;
+}
+</style>
