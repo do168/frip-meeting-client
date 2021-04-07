@@ -1,4 +1,4 @@
-# vue-ts
+# frip-meeting-client
 
 ## Project setup
 ```
